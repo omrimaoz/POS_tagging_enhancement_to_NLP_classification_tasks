@@ -1,0 +1,8 @@
+LSTM Reference:
+
+https://www.kdnuggets.com/2020/07/pytorch-lstm-text-generation-tutorial.html
+
+https://github.com/Neeratyoy/SequenceModelling
+Transformers and lstm comparison
+https://towardsdatascience.com/a-detailed-guide-to-pytorchs-nn-transformer-module-c80afbc9ffb1
+https://towardsdatascience.com/how-to-code-the-transformer-in-pytorch-24db27c8f9ec
