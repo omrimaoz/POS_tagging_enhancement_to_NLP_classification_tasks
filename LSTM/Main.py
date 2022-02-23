@@ -17,8 +17,10 @@ from LSTM.Model import LSTM
 
 dataset = sys.argv[1]
 tagging = sys.argv[2]  # tagging = 'review' / 'upos' / 'xpos'
-batch_size = 32
+batch_size = 128
 limit = -1
+torch.manual_seed(0)
+
 
 def train_model(model, criterion, train_loader, valid_loader, epochs=10, lr=0.01):
     parameters = filter(lambda p: p.requires_grad, model.parameters())
@@ -84,6 +86,6 @@ valid_ds = ReviewsDataset(X_valid, y_valid)
 train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
 val_dl = DataLoader(valid_ds, batch_size=batch_size)
 
-model = LSTM(vocab_size, embedding_dim=30, hidden_dim=30)
+model = LSTM(vocab_size, embedding_dim=30, hidden_dim=30, num_classes=reviews['prop']['num_classes'])
 
-train_model(model, criterion=nn.CrossEntropyLoss(), train_loader=train_dl, valid_loader=val_dl, epochs=30)
+train_model(model, criterion=nn.CrossEntropyLoss(), train_loader=train_dl, valid_loader=val_dl, epochs=30, lr=0.001)

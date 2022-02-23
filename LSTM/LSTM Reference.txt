@@ -2,6 +2,7 @@ LSTM Reference:
 
 https://www.kdnuggets.com/2020/07/pytorch-lstm-text-generation-tutorial.html
 https://towardsdatascience.com/lstm-text-classification-using-pytorch-2c6c657f8fc0
+https://towardsdatascience.com/multiclass-text-classification-using-lstm-in-pytorch-eac56baed8df
 
 https://github.com/Neeratyoy/SequenceModelling
 Transformers and lstm comparison

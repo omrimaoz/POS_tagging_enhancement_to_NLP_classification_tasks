@@ -16,7 +16,6 @@ tagging = sys.argv[2]  # tagging = 'review' / 'upos' / 'xpos'
 #loading the data
 with open("../Datasets/" + dataset, 'r') as f:
     reviews = json.loads(f.read())
-# reviews = reviews[reviews['Review Text'].notna()]
 print('Number of reviews: {}'.format(len(reviews)))
 
 #tokenization
@@ -30,7 +29,7 @@ def tokenize (text):
 #count number of occurences of each word
 counts = Counter()
 for _, review in reviews.items():
-    counts.update(tokenize(review['review']))
+    counts.update(tokenize(review[tagging]))
 
 # deleting infrequent words
 print("Number of words before:", len(counts.keys()))
@@ -49,7 +48,8 @@ for word in counts:
 encode_reviews = {
     'prop': {
         'num_reviews': len(reviews),
-        'num_words': len(words)
+        'num_words': len(words),
+        'num_classes': len(set([review['sentiment'] for _, review in reviews.items()]))
     },
     'data': {}
 }
