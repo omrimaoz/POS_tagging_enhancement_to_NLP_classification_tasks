@@ -8,3 +8,8 @@ https://github.com/Neeratyoy/SequenceModelling
 Transformers and lstm comparison
 https://towardsdatascience.com/a-detailed-guide-to-pytorchs-nn-transformer-module-c80afbc9ffb1
 https://towardsdatascience.com/how-to-code-the-transformer-in-pytorch-24db27c8f9ec
+
+https://www.enchantedlearning.com/grammar/partsofspeech/adjectives/
+https://provalisresearch.com/products/content-analysis-software/wordstat-dictionary/wordnet-based-categorization-dictionary/
+https://universaldependencies.org/u/pos/index.html
+https://mmsankosho.com/en/nlp-for-learners-parsing-with-stanza/
