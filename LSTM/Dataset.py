@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import Dataset
 
 
-class ReviewsDataset(Dataset):
+class PhrasesDataset(Dataset):
     def __init__(self, X, Y):
         self.X = X
         self.y = Y

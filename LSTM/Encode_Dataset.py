@@ -11,26 +11,34 @@ import spacy
 
 destination_folder = '../LSTM'
 dataset = sys.argv[1]
-tagging = sys.argv[2]  # tagging = 'review' / 'upos' / 'xpos'
+tagging = sys.argv[2]  # tagging = 'original' / 'upos' / 'xpos'
 
 #loading the data
 with open("../Datasets/" + dataset, 'r') as f:
-    reviews = json.loads(f.read())
-# reviews = reviews[reviews['Review Text'].notna()]
-print('Number of reviews: {}'.format(len(reviews)))
+    phrases = json.loads(f.read())
+print('Number of phrases: {}'.format(len(phrases)))
 
 #tokenization
 tok = spacy.load('en_core_web_sm')
-def tokenize (text):
+def tokenize(text):
     text = re.sub(r"[^\x00-\x7F]+", " ", text)
-    regex = re.compile('[' + re.escape(string.punctuation) + '0-9\\r\\t\\n]') # remove punctuation and numbers
+    regex = re.compile('[' + re.escape(string.punctuation.replace('_', '')) + '0-9\\r\\t\\n]') # remove punctuation and numbers
     nopunct = regex.sub(" ", text.lower())
     return [token.text for token in tok.tokenizer(nopunct)]
 
+def a(lst):
+    new_lst = list()
+    for aa in lst:
+        if 'adj' in aa or 'noun' in aa or 'verb' in aa or 'adv' in aa:
+            new_lst.append(aa)
+        else:
+            new_lst.append('UNK')
+    return new_lst
 #count number of occurences of each word
 counts = Counter()
-for _, review in reviews.items():
-    counts.update(tokenize(review['review']))
+for _, phrase in phrases.items():
+    # counts.update(tokenize(phrase[tagging]))
+    counts.update(a(tokenize(phrase[tagging])))
 
 # deleting infrequent words
 print("Number of words before:", len(counts.keys()))
@@ -46,10 +54,11 @@ for word in counts:
     vocab2index[word] = len(words)
     words.append(word)
 
-encode_reviews = {
+encode_phrases = {
     'prop': {
-        'num_reviews': len(reviews),
-        'num_words': len(words)
+        'num_phrases': len(phrases),
+        'num_words': len(words),
+        'num_classes': len(set([phrase['class'] for _, phrase in phrases.items()]))
     },
     'data': {}
 }
@@ -62,18 +71,13 @@ def encode_sentence(text, vocab2index, N=70):
     encoded[:length] = enc1[:length]
     return encoded.tolist(), length
 
-for idx, review in reviews.items():
-    sentiment = 0
-    encode_sen, len_sen = encode_sentence(review[tagging], vocab2index)
-    if 'IMDB' in dataset:
-        sentiment = 1 if review['sentiment'] == 'positive' else 0
-    if 'News' in dataset:
-        pass  # TODO: fill in
-    encode_reviews['data'].update({idx: {
+for idx, phrase in phrases.items():
+    encode_sen, len_sen = encode_sentence(phrase[tagging], vocab2index)
+    encode_phrases['data'].update({idx: {
         'encode_sen': encode_sen,
         'len_sen': len_sen,
-        'sentiment': sentiment,
+        'class': phrase['class'],
     }})
 
-with open('../LSTM/Processed_' + tagging + '_' + dataset, 'w') as f:
-    f.write(json.dumps(encode_reviews))
+with open('../LSTM/Processed_2_' + tagging + '_' + dataset, 'w') as f:
+    f.write(json.dumps(encode_phrases))
