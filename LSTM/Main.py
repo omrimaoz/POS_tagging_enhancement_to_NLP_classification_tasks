@@ -16,7 +16,7 @@ from LSTM.Model import LSTM
 dataset = sys.argv[1]
 tagging = sys.argv[2]  # tagging = 'original' / 'upos' / 'xpos'
 epochs = 50
-limit = -1
+limit = 5000
 # torch.manual_seed(2)
 
 
@@ -67,7 +67,7 @@ def validate_model(model, criterion, valid_loader):
     return sum_loss/total, correct/total
 
 # loading the data
-with open('../LSTM/Processed_' + tagging + '_' + dataset, 'r') as f:
+with open('../LSTM/Processed_2_' + tagging + '_' + dataset, 'r') as f:
     phrases = json.loads(f.read())
 vocab_size = phrases['prop']['num_words']
 batch_size = phrases['prop']['num_phrases'] // 10
@@ -79,15 +79,12 @@ print(Counter([phrase['class'] for _, phrase in phrases['data'].items()]))
 X = [(np.array(phrase['encode_sen']), phrase['len_sen']) for _, phrase in phrases['data'].items()][:limit]
 y = [phrase['class'] for _, phrase in phrases['data'].items()][:limit]
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.01)
-X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.2)
+X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2)
 
 train_ds = PhrasesDataset(X_train, y_train)
 valid_ds = PhrasesDataset(X_valid, y_valid)
-test_ds = PhrasesDataset(X_test, y_test)
 train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
 val_dl = DataLoader(valid_ds, batch_size=batch_size)
-test_dl = DataLoader(test_ds, batch_size=batch_size)
 
 
 model = LSTM(vocab_size, embedding_dim=300, hidden_dim=128, num_classes=phrases['prop']['num_classes'])
