@@ -2,14 +2,15 @@ import os
 import json
 import random
 
-from Datasets.Common_Functions import get_last_saved_json, find_tags
+from Datasets.Common_Functions import get_last_saved_json, find_tags, Bigram_process
 
-limit = 15000
+limit = 5000
 folder = os.getcwd()
 random.seed(0)
 
 dataset = dict()
 dict_to_json = dict()
+News_dict = dict()
 
 categories_dict = {
     'POLITICS': 0,
@@ -55,7 +56,7 @@ categories_dict = {
     'CULTURE & ARTS': 40
 }
 inv_categories_dict = {v: k for k, v in categories_dict.items()}
-category_ids = [0, 1, 2, 3, 4, 5]
+category_ids = [0, 1, 2, 3, 9, 11, 17]
 chosen_categories = [inv_categories_dict[category_id] for category_id in category_ids]
 
 last_iteration = get_last_saved_json(folder, 'News')
@@ -68,25 +69,28 @@ with open(folder + '/News_Dataset_v1.json', 'r') as f:
     lines = [line for line in lines if json.loads(line)['category'] in chosen_categories]
     random.shuffle(lines)
     lines = lines[last_iteration:limit]
-with open(folder + '/News_Dataset_v2.json', 'w') as f:
-    f.write('{')
-    lines = lines[:limit]
-    for i, line in enumerate(lines):
-        if i == len(lines) - 1:
-            f.write('"' + str(i) + '":' + line + '}')
-            break
-        f.write('"' + str(i) + '":' + line + ",")
 
-with open(folder + '/News_Dataset_v2.json', 'r') as f:
-    News_dict = json.loads(f.read())
-os.remove(folder + '/News_Dataset_v2.json')
+if lines:
+    with open(folder + '/News_Dataset_v2.json', 'w') as f:
+        f.write('{')
+        lines = lines[:limit]
+        for i, line in enumerate(lines):
+            if i == len(lines) - 1:
+                f.write('"' + str(i) + '":' + line + '}')
+                break
+            f.write('"' + str(i) + '":' + line + ",")
+
+    with open(folder + '/News_Dataset_v2.json', 'r') as f:
+        News_dict = json.loads(f.read())
+    os.remove(folder + '/News_Dataset_v2.json')
 
 for key, item in News_dict.items():
     dataset.update({
         key: {
             'original': item['headline'],
-            'class': categories_dict[item['category']]
+            'class': category_ids.index(categories_dict[item['category']])
         }
     })
 
 find_tags(dataset, dict_to_json, folder, 'News', limit)
+Bigram_process(dataset, dict_to_json, folder, 'News', 5000)

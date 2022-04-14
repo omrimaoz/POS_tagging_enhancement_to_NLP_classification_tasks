@@ -117,3 +117,62 @@ def find_tags(dataset, dict_to_json, folder, dataset_name, limit):
 
         if (int(i) + last_iteration + 1) >= limit:
             break
+
+def Bigram_process(dataset, dict_to_json, folder, dataset_name, limit):
+    extend_tags = True
+    filter_tags = True
+    chosen_tags = ['ADJ', 'ADV', 'NOUN', 'VERB']
+    bi_counters_list = [Counter(), Counter()] if dataset_name == 'IMDB' else \
+        [Counter(), Counter(), Counter(), Counter(), Counter(), Counter(), Counter()]
+    if filter_tags:
+        for _, item in dict_to_json.items():
+            item['upos'] = " ".join([word for word in item['upos'].split(' ') if len([tag for tag in chosen_tags if tag in word]) > 0])
+
+    iteration = 0
+    for _, item in dict_to_json.items():
+        bigram_words = list()
+        prev_word = item['upos'].split(' ')[0]
+        prev_word = prev_word.split('_')[0] if '_' in prev_word and not extend_tags else prev_word
+        for word in item['upos'].split(' ')[1:]:
+            word = word.split('_')[0] if '_' in word and not extend_tags else word
+            bigram_words.append(prev_word + "#" + word)
+            prev_word = word
+        bi_counters_list[int(item['class'])].update(Counter(bigram_words))
+
+        if iteration >= limit:
+            break
+        iteration += 1
+
+    iteration = 0
+    for _, item in dict_to_json.items():
+        new_phrase = item['upos'].split(' ')
+        temp = list()
+        for word in new_phrase:
+            if '_' in word and not extend_tags:
+                temp.append(word.split('_')[0])
+            else:
+                temp.append(word)
+        new_phrase = temp
+
+        times_list = [1 for _ in range(len(new_phrase) - 1)]
+        while len(times_list) != 0 and np.sum(times_list) > 0:
+            for i in range(len(new_phrase) - 1):
+                if '#' not in new_phrase[i] and '#' not in new_phrase[i+1]:
+                    times_list[i] = bi_counters_list[int(item['class'])][new_phrase[i] + "#" + new_phrase[i+1]]
+                else:
+                    times_list[i] = 0
+            if np.sum(times_list) == 0:
+                break
+            idx = np.argmax(times_list)
+            new_phrase[idx] = new_phrase[idx] + '#' + new_phrase[idx+1]
+            new_phrase.pop(idx + 1), times_list.pop(idx)
+        item['upos'] = ' '.join(new_phrase)
+
+        if iteration >= limit:
+            break
+        iteration += 1
+
+    file_name = folder + '/{}_Dataset_{}_Bigram_filter_extend.json'.format(dataset_name, limit)
+    with open(file_name, 'w') as f:
+        json.dump(dict_to_json, f)
+    print(1)

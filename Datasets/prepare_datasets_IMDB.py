@@ -2,9 +2,9 @@ import os
 import pandas as pd
 import json
 
-from Datasets.Common_Functions import get_last_saved_json, find_tags
+from Datasets.Common_Functions import get_last_saved_json, find_tags, Bigram_process
 
-limit = 15000
+limit = 16000
 folder = os.getcwd()
 
 dataset = dict()
@@ -31,4 +31,4 @@ for i, row in df.iterrows():
     last_iteration += 1
 
 find_tags(dataset, dict_to_json, folder, 'IMDB', limit)
-
+Bigram_process(dataset, dict_to_json, folder, 'IMDB', 5000)

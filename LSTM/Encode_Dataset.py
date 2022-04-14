@@ -22,7 +22,7 @@ print('Number of phrases: {}'.format(len(phrases)))
 tok = spacy.load('en_core_web_sm')
 def tokenize(text):
     text = re.sub(r"[^\x00-\x7F]+", " ", text)
-    regex = re.compile('[' + re.escape(string.punctuation.replace('_', '')) + '0-9\\r\\t\\n]') # remove punctuation and numbers
+    regex = re.compile('[' + re.escape(string.punctuation.replace('_', '').replace('#', '')) + '0-9\\r\\t\\n]') # remove punctuation and numbers
     nopunct = regex.sub(" ", text.lower())
     return [token.text for token in tok.tokenizer(nopunct)]
 
@@ -37,8 +37,8 @@ def a(lst):
 #count number of occurences of each word
 counts = Counter()
 for _, phrase in phrases.items():
-    # counts.update(tokenize(phrase[tagging]))
-    counts.update(a(tokenize(phrase[tagging])))
+    counts.update(tokenize(phrase[tagging]))
+    # counts.update(a(tokenize(phrase[tagging])))
 
 # deleting infrequent words
 print("Number of words before:", len(counts.keys()))
