@@ -2,12 +2,13 @@ import os
 import json
 import random
 
-from Datasets.Common_Functions import get_last_saved_json, find_tags, Bigram_process
+from Datasets.Feature_Selection import get_last_saved_json, feature_selection
 
 limit = 5000
 folder = os.getcwd()
 random.seed(0)
 
+proceed_lines = list()
 dataset = dict()
 dict_to_json = dict()
 News_dict = dict()
@@ -66,16 +67,23 @@ if last_iteration:
 
 with open(folder + '/News_Dataset_v1.json', 'r') as f:
     lines = f.readlines()
-    lines = [line for line in lines if json.loads(line)['category'] in chosen_categories]
-    random.shuffle(lines)
-    lines = lines[last_iteration:limit]
 
-if lines:
+lines = [line for line in lines if json.loads(line)['category'] in chosen_categories]
+category_counter = [0, 0, 0, 0, 0, 0, 0]
+for line in lines:
+    cat = int(category_ids.index(categories_dict[json.loads(line)['category']]))
+    if category_counter[cat] < limit // len(category_ids) + 1:
+        category_counter[cat] += 1
+        proceed_lines.append(line)
+
+proceed_lines = proceed_lines[last_iteration:limit]
+random.shuffle(proceed_lines)
+
+if proceed_lines:
     with open(folder + '/News_Dataset_v2.json', 'w') as f:
         f.write('{')
-        lines = lines[:limit]
-        for i, line in enumerate(lines):
-            if i == len(lines) - 1:
+        for i, line in enumerate(proceed_lines):
+            if i == len(proceed_lines) - 1:
                 f.write('"' + str(i) + '":' + line + '}')
                 break
             f.write('"' + str(i) + '":' + line + ",")
@@ -92,5 +100,5 @@ for key, item in News_dict.items():
         }
     })
 
-find_tags(dataset, dict_to_json, folder, 'News', limit)
-Bigram_process(dataset, dict_to_json, folder, 'News', 5000)
+feature_selection(dataset, dict_to_json, folder, 'News', limit)
+

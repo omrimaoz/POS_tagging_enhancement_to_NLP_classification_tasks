@@ -20,6 +20,7 @@ nlp_tagger = stanza.Pipeline(lang='en', processors='tokenize,mwt,pos')
 nlp_sim = spacy.load('en_core_web_md')
 
 with_xpos = False
+chosen_tags = ['ADJ', 'ADV', 'NOUN', 'VERB']
 
 def get_suffix_tag(word):
     for key in ADJ_suffix.keys():
@@ -54,7 +55,8 @@ def get_last_saved_json(folder, dataset_name):
     return 0
 
 
-def find_tags(dataset, dict_to_json, folder, dataset_name, limit):
+def get_extend_tags_tags(dataset, dict_to_json, folder, dataset_name, limit):
+    limited_dict = dict()
     sub_categories = dict()
     last_iteration = len(dict_to_json)
     for i, item in dataset.items():
@@ -118,17 +120,37 @@ def find_tags(dataset, dict_to_json, folder, dataset_name, limit):
         if (int(i) + last_iteration + 1) >= limit:
             break
 
-def Bigram_process(dataset, dict_to_json, folder, dataset_name, limit):
-    extend_tags = True
-    filter_tags = True
-    chosen_tags = ['ADJ', 'ADV', 'NOUN', 'VERB']
+    for i, item in dict_to_json.items():
+        if int(i) < limit:
+            limited_dict[i] = item
+        else:
+            break
+    return limited_dict
+
+
+def get_upos_tags(dict_to_json, dataset_name, filter_tags, extend_tags):
+    if filter_tags:
+        for _, item in dict_to_json.items():
+            item['upos'] = " ".join([word for word in item['upos'].split(' ') if len([tag for tag in chosen_tags if tag in word]) > 0])
+
+    if not extend_tags:
+        for _, item in dict_to_json.items():
+            sent = list()
+            for word in item['upos'].split(' '):
+                if '_' in word:
+                    sent.append(word.split('_')[0])
+                else:
+                    sent.append(word)
+            item['upos'] = " ".join(sent)
+
+
+def get_bigram_tags(dict_to_json, dataset_name, filter_tags, extend_tags):
     bi_counters_list = [Counter(), Counter()] if dataset_name == 'IMDB' else \
         [Counter(), Counter(), Counter(), Counter(), Counter(), Counter(), Counter()]
     if filter_tags:
         for _, item in dict_to_json.items():
             item['upos'] = " ".join([word for word in item['upos'].split(' ') if len([tag for tag in chosen_tags if tag in word]) > 0])
 
-    iteration = 0
     for _, item in dict_to_json.items():
         bigram_words = list()
         prev_word = item['upos'].split(' ')[0]
@@ -139,11 +161,6 @@ def Bigram_process(dataset, dict_to_json, folder, dataset_name, limit):
             prev_word = word
         bi_counters_list[int(item['class'])].update(Counter(bigram_words))
 
-        if iteration >= limit:
-            break
-        iteration += 1
-
-    iteration = 0
     for _, item in dict_to_json.items():
         new_phrase = item['upos'].split(' ')
         temp = list()
@@ -168,11 +185,20 @@ def Bigram_process(dataset, dict_to_json, folder, dataset_name, limit):
             new_phrase.pop(idx + 1), times_list.pop(idx)
         item['upos'] = ' '.join(new_phrase)
 
-        if iteration >= limit:
-            break
-        iteration += 1
 
-    file_name = folder + '/{}_Dataset_{}_Bigram_filter_extend.json'.format(dataset_name, limit)
-    with open(file_name, 'w') as f:
-        json.dump(dict_to_json, f)
-    print(1)
+def feature_selection(dataset, dict_to_json, folder, dataset_name, limit):
+    dict_to_json = get_extend_tags_tags(dataset, dict_to_json, folder, 'News', limit)
+
+    with open('./feature_combination.json', 'r') as f:
+        feature_combination = json.loads(f.read())
+    for feature in feature_combination:
+        feature_dataset_dict = dict()
+        for key, item in dict_to_json.items():
+            feature_dataset_dict[key] = item.copy()
+        f = get_bigram_tags if feature['base_tags'] == 'bigram' else get_upos_tags
+        f(feature_dataset_dict, dataset_name, feature['filter'], feature['extend'])
+
+        file_name = folder + '/{}_Dataset_{}_{}.json'.format(dataset_name, limit, feature['name'])
+        with open(file_name, 'w') as f:
+            json.dump(feature_dataset_dict, f)
+        

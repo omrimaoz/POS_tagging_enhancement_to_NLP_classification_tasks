@@ -6,6 +6,7 @@ class LSTM(torch.nn.Module):
     def __init__(self, vocab_size, embedding_dim, hidden_dim, num_classes):
         super().__init__()
         self.num_layers = 3
+        self.num_classes = num_classes
         self.embeddings = nn.Embedding(vocab_size, embedding_dim, padding_idx=0)
         self.lstm1 = nn.LSTM(embedding_dim, hidden_dim, num_layers=self.num_layers, bidirectional=True, batch_first=True)
         # self.lstm2 = nn.LSTM(hidden_dim, hidden_dim//2, num_layers=self.num_layers, batch_first=True)
