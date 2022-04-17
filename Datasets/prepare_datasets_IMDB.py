@@ -2,9 +2,9 @@ import os
 import pandas as pd
 import json
 
-from Datasets.Common_Functions import get_last_saved_json, find_tags, Bigram_process
+from Datasets.Feature_Selection import get_last_saved_json, feature_selection
 
-limit = 16000
+limit = 5000
 folder = os.getcwd()
 
 dataset = dict()
@@ -30,5 +30,4 @@ for i, row in df.iterrows():
     })
     last_iteration += 1
 
-find_tags(dataset, dict_to_json, folder, 'IMDB', limit)
-Bigram_process(dataset, dict_to_json, folder, 'IMDB', 5000)
+feature_selection(dataset, dict_to_json, folder, 'IMDB', limit)
