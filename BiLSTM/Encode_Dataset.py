@@ -10,8 +10,6 @@ from Shared.Common_Functions import remove_punctuation
 destination_folder = '../BiLSTM'
 
 def encode_dataset(phrases, tags):
-    print('Number of phrases: {}'.format(len(phrases)))
-
     # tokenization
     tok = spacy.load('en_core_web_sm')
     def tokenize(text):

@@ -10,7 +10,7 @@ from Batch import create_masks
 from Transformer.Model import Transformer
 
 dataset_name = sys.argv[1]
-tag_feature = sys.argv[2]  # tags = 'original' / 'upos' / ...
+tag_feature = sys.argv[2]  # tag_feature = 'original' / 'upos' / ...
 limit = int(sys.argv[3])
 if limit not in [1000, 5000, 15000]:
     limit = 5000

@@ -16,6 +16,7 @@ from Shared.F1_Score import get_binary_F1_score, get_multi_F1_score
 dataset_name = sys.argv[1]
 tag_feature = sys.argv[2]  # tags = 'original' / 'upos' / ...
 limit = int(sys.argv[3])
+epochs = 50
 if limit not in [1000, 5000, 15000]:
     limit = 5000
 
@@ -73,19 +74,23 @@ def validate_model(model, criterion, valid_loader):
     return sum_loss/total, accuracy, precision, recall, F1
 
 # loading the data
-with open("../Datasets/" + dataset_name, 'r') as f:
+if tag_feature == 'original':
+    path = '../Datasets/{dataset_name}_Dataset_5000_upos.json'.format(
+        dataset_name=dataset_name)
+else:
+    path = '../Datasets/{dataset_name}_Dataset_5000_{tag_feature}.json'.format(
+        dataset_name=dataset_name, tag_feature=tag_feature)
+    tag_feature = 'upos'
+
+with open(path, 'r') as f:
     dataset = json.loads(f.read())
 
 # encoding the data
-phrases = encode_dataset(dataset, tags)
-
-for key, item in phrases['data'].copy().items():
-    if item['class'] > 3:
-        phrases['data'].pop(key)
-
+phrases = encode_dataset(dataset, tag_feature)
 
 vocab_size = phrases['prop']['num_words']
 batch_size = min(phrases['prop']['num_phrases'], limit) // 10
+print('Number of phrases: {}'.format(min(phrases['prop']['num_phrases'], limit)))
 
 X = [(np.array(phrase['encode_sen']), phrase['len_sen']) for _, phrase in phrases['data'].items()][:limit]
 y = [phrase['class'] for _, phrase in phrases['data'].items()][:limit]
