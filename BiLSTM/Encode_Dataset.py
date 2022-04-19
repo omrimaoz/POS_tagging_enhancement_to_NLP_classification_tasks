@@ -7,7 +7,7 @@ import spacy
 
 from Shared.Common_Functions import remove_punctuation
 
-destination_folder = '../LSTM'
+destination_folder = '../BiLSTM'
 
 def encode_dataset(phrases, tags):
     print('Number of phrases: {}'.format(len(phrases)))

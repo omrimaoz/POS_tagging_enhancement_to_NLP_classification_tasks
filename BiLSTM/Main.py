@@ -7,10 +7,10 @@ import numpy as np
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-from LSTM.Dataset import PhrasesDataset
+from BiLSTM.Dataset import PhrasesDataset
 from sklearn.model_selection import train_test_split
-from LSTM.Encode_Dataset import encode_dataset
-from LSTM.Model import LSTM
+from BiLSTM.Encode_Dataset import encode_dataset
+from BiLSTM.Model import LSTM
 from Shared.F1_Score import get_binary_F1_score, get_multi_F1_score
 
 dataset_name = sys.argv[1]

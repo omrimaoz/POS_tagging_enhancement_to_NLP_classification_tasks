@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import spacy
 
-destination_folder = '../LSTM'
+destination_folder = '../BiLSTM'
 
 def encode_dataset(phrases, tags):
     print('Number of phrases: {}'.format(len(phrases)))
