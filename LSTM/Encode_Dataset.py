@@ -1,28 +1,24 @@
-#imports
-import json
 import re
 import string
-import sys
 from collections import Counter
 
 import numpy as np
-import pandas as pd
 import spacy
+
+from Shared.Common_Functions import remove_punctuation
 
 destination_folder = '../LSTM'
 
 def encode_dataset(phrases, tags):
     print('Number of phrases: {}'.format(len(phrases)))
 
-    #tokenization
+    # tokenization
     tok = spacy.load('en_core_web_sm')
     def tokenize(text):
-        text = re.sub(r"[^\x00-\x7F]+", " ", text)
-        regex = re.compile('[' + re.escape(string.punctuation.replace('_', '').replace('#', '')) + '0-9\\r\\t\\n]') # remove punctuation and numbers
-        nopunct = regex.sub(" ", text.lower())
+        nopunct = remove_punctuation(text)
         return [token.text for token in tok.tokenizer(nopunct)]
 
-    #count number of occurences of each word
+    # count number of occurrences of each word
     counts = Counter()
     for _, phrase in phrases.items():
         counts.update(tokenize(phrase[tags]))

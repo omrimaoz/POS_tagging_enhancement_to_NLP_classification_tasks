@@ -189,7 +189,7 @@ def get_bigram_tags(dict_to_json, dataset_name, filter_tags, extend_tags):
 def feature_selection(dataset, dict_to_json, folder, dataset_name, limit):
     dict_to_json = get_extend_tags_tags(dataset, dict_to_json, folder, 'News', limit)
 
-    with open('./feature_combination.json', 'r') as f:
+    with open('Feature_Combination.json', 'r') as f:
         feature_combination = json.loads(f.read())
     for feature in feature_combination:
         feature_dataset_dict = dict()

@@ -1,0 +1,44 @@
+[
+  {
+    "name": "upos",
+    "base_tags": "upos",
+    "extend": false,
+    "filter": false
+  },
+  {
+    "name": "upos_filter",
+    "base_tags": "upos",
+    "extend": false,
+    "filter": true
+  },
+  {
+    "name": "upos_filter_extend",
+    "base_tags": "upos",
+    "extend": true,
+    "filter": true
+  },
+  {
+    "name": "bigram",
+    "base_tags": "bigram",
+    "extend": false,
+    "filter": false
+  },
+  {
+    "name": "bigram_filter",
+    "base_tags": "bigram",
+    "extend": false,
+    "filter": true
+  },
+  {
+    "name": "bigram_extend",
+    "base_tags": "bigram",
+    "extend": true,
+    "filter": false
+  },
+  {
+    "name": "bigram_filter_extend",
+    "base_tags": "bigram",
+    "extend": true,
+    "filter": true
+  }
+]
