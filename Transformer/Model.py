@@ -50,7 +50,7 @@ class Transformer(nn.Module):
         self.trg_encode = trg_vocab
         self.encoder = Encoder(src_vocab, d_model, N, heads, dropout)
         self.decoder = Decoder(trg_vocab, d_model, N, heads, dropout)
-        self.linear = nn.Linear(d_model, trg_vocab - 5)
+        self.linear = nn.Linear(d_model, trg_vocab)
         self.out = nn.Softmax(dim=2)
 
     def forward(self, src, trg, src_mask, trg_mask):
@@ -59,23 +59,3 @@ class Transformer(nn.Module):
         d_output = self.decoder(trg, e_outputs, src_mask, trg_mask)
         output = self.out(self.linear(d_output))
         return output
-
-
-# def get_model(opt, src_vocab, trg_vocab):
-#     assert opt.d_model % opt.heads == 0
-#     assert opt.dropout < 1
-#
-#     model = Transformer(src_vocab, trg_vocab, opt.d_model, opt.n_layers, opt.heads, opt.dropout)
-#
-#     if opt.load_weights is not None:
-#         print("loading pretrained weights...")
-#         model.load_state_dict(torch.load(f'{opt.load_weights}/model_weights'))
-#     else:
-#         for p in model.parameters():
-#             if p.dim() > 1:
-#                 nn.init.xavier_uniform_(p)
-#
-#     if opt.device == 0:
-#         model = model.cuda()
-#
-#     return model

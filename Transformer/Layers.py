@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 from Attention import FeedForward, MultiHeadAttention, Norm
 
@@ -21,8 +20,6 @@ class EncoderLayer(nn.Module):
         return x
 
 
-# build a decoder layer with two multi-head attention layers and
-# one feed-forward layer
 class DecoderLayer(nn.Module):
     def __init__(self, d_model, heads, dropout=0.1):
         super().__init__()
