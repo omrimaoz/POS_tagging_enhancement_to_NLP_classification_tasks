@@ -1,5 +1,4 @@
 import json
-import sys
 import time
 from collections import Counter
 
@@ -10,15 +9,8 @@ from torch.utils.data import DataLoader
 from BiLSTM.Dataset import PhrasesDataset
 from sklearn.model_selection import train_test_split
 from BiLSTM.Encode_Dataset import encode_dataset
-from BiLSTM.Model import LSTM
+from BiLSTM.Model import BiLSTM
 from Shared.F1_Score import get_binary_F1_score, get_multi_F1_score
-
-dataset_name = sys.argv[1]
-tag_feature = sys.argv[2]  # tags = 'original' / 'upos' / ...
-limit = int(sys.argv[3])
-epochs = 50
-if limit not in [1000, 5000, 15000]:
-    limit = 5000
 
 
 def train_model(model, criterion, train_loader, valid_loader, epochs=10, lr=0.01):
@@ -52,6 +44,7 @@ def train_model(model, criterion, train_loader, valid_loader, epochs=10, lr=0.01
             F1=np.round(F1, 3), time=int(end-start)
         ))
 
+
 def validate_model(model, criterion, valid_loader):
     model.eval()
     correct = 0
@@ -73,39 +66,45 @@ def validate_model(model, criterion, valid_loader):
     accuracy, precision, recall, F1 = get_F1_score(actual, pred)
     return sum_loss/total, accuracy, precision, recall, F1
 
-# loading the data
-if tag_feature == 'original':
-    path = '../Datasets/{dataset_name}_Dataset_5000_upos.json'.format(
-        dataset_name=dataset_name)
-else:
-    path = '../Datasets/{dataset_name}_Dataset_5000_{tag_feature}.json'.format(
-        dataset_name=dataset_name, tag_feature=tag_feature)
-    tag_feature = 'upos'
 
-with open(path, 'r') as f:
-    dataset = json.loads(f.read())
+def main(dataset_name, tag_feature, limit, dataset_size):
+    # loading the data
+    if tag_feature == 'original':
+        path = '../Datasets/{dataset_name}_Dataset_{dataset_size}_upos.json'.format(
+            dataset_name=dataset_name, dataset_size=dataset_size)
+    else:
+        path = '../Datasets/{dataset_name}_Dataset_{dataset_size}_{tag_feature}.json'.format(
+            dataset_name=dataset_name,  dataset_size=dataset_size, tag_feature=tag_feature)
+        tag_feature = 'upos'
 
-# encoding the data
-phrases = encode_dataset(dataset, tag_feature)
+    with open(path, 'r') as f:
+        dataset = json.loads(f.read())
 
-vocab_size = phrases['prop']['num_words']
-batch_size = min(phrases['prop']['num_phrases'], limit) // 10
-print('Number of phrases: {}'.format(min(phrases['prop']['num_phrases'], limit)))
+    # encoding the data
+    phrases = encode_dataset(dataset, tag_feature)
 
-X = [(np.array(phrase['encode_sen']), phrase['len_sen']) for _, phrase in phrases['data'].items()][:limit]
-y = [phrase['class'] for _, phrase in phrases['data'].items()][:limit]
+    for key, item in phrases['data'].copy().items():
+        if item['class'] in [5, 6]:
+            phrases['data'].pop(key)
 
-# check how balanced the dataset is
-print('How balanced the dataset is:')
-print(Counter(y))
+    vocab_size = phrases['prop']['num_words']
+    batch_size = min(phrases['prop']['num_phrases'], limit) // 10
+    print('Number of phrases: {}'.format(min(phrases['prop']['num_phrases'], limit)))
 
-X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2)
+    X = [(np.array(phrase['encode_sen']), phrase['len_sen']) for _, phrase in phrases['data'].items()][:limit]
+    y = [phrase['class'] for _, phrase in phrases['data'].items()][:limit]
 
-train_ds = PhrasesDataset(X_train, y_train)
-valid_ds = PhrasesDataset(X_valid, y_valid)
-train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
-val_dl = DataLoader(valid_ds, batch_size=batch_size)
+    # check how balanced the dataset is
+    print('How balanced the dataset is:')
+    print(Counter(y))
 
-model = LSTM(vocab_size, embedding_dim=300, hidden_dim=128, num_classes=phrases['prop']['num_classes'])
+    X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2)
 
-train_model(model, criterion=nn.CrossEntropyLoss(), train_loader=train_dl, valid_loader=val_dl, epochs=epochs, lr=0.01)
+    train_ds = PhrasesDataset(X_train, y_train)
+    valid_ds = PhrasesDataset(X_valid, y_valid)
+    train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+    val_dl = DataLoader(valid_ds, batch_size=batch_size)
+
+    model = BiLSTM(vocab_size, embedding_dim=300, hidden_dim=128, num_classes=phrases['prop']['num_classes'])
+
+    train_model(model, criterion=nn.CrossEntropyLoss(), train_loader=train_dl, valid_loader=val_dl, epochs=50, lr=0.005)

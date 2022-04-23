@@ -4,7 +4,7 @@ import json
 
 from Datasets.Feature_Selection import get_last_saved_json, feature_selection
 
-limit = 5000
+limit = 15000
 folder = os.getcwd()
 
 dataset = dict()
@@ -21,6 +21,8 @@ if last_iteration:
     with open(folder + '/IMDB_Dataset_{}.json'.format(last_iteration), 'r') as f:
         dict_to_json = json.loads(f.read())
 df = df[last_iteration:limit]
+
+last_iteration = 0
 for i, row in df.iterrows():
     dataset.update({
         last_iteration: {

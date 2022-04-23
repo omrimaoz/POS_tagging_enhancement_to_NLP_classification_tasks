@@ -6,7 +6,7 @@ import pandas as pd
 from torchtext.legacy import data
 
 from Shared.Common_Functions import remove_punctuation
-from Tokenize import tokenize
+from Transformer.Tokenize import tokenize
 import os
 
 

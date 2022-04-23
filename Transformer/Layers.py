@@ -1,5 +1,5 @@
 import torch.nn as nn
-from Attention import FeedForward, MultiHeadAttention, Norm
+from Transformer.Attention import FeedForward, MultiHeadAttention, Norm
 
 
 class EncoderLayer(nn.Module):

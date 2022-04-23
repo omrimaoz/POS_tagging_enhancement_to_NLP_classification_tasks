@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
-from Layers import EncoderLayer, DecoderLayer
-from Embedding import Embedder, PositionalEncoder
-from Attention import Norm
+from Transformer.Layers import EncoderLayer, DecoderLayer
+from Transformer.Embedding import Embedder, PositionalEncoder
+from Transformer.Attention import Norm
 import copy
 
 
