@@ -4,7 +4,7 @@ import random
 
 from Datasets.Feature_Selection import get_last_saved_json, feature_selection
 
-limit = 5000
+limit = 15000
 folder = os.getcwd()
 random.seed(0)
 
@@ -57,7 +57,7 @@ categories_dict = {
     'CULTURE & ARTS': 40
 }
 inv_categories_dict = {v: k for k, v in categories_dict.items()}
-category_ids = [0, 1, 2, 3, 9, 11, 17]
+category_ids = [0, 1, 2, 3, 9]
 chosen_categories = [inv_categories_dict[category_id] for category_id in category_ids]
 
 last_iteration = get_last_saved_json(folder, 'News')

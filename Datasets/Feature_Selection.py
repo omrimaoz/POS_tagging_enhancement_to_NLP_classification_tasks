@@ -6,6 +6,7 @@ from collections import Counter
 import numpy as np
 from nltk.corpus import wordnet as wn
 from Adjective_Categories import ADJ_categories, ADJ_suffix
+from Adverb_Categories import ADV_categories, ADV_suffix
 
 import spacy
 import stanza
@@ -22,27 +23,29 @@ nlp_sim = spacy.load('en_core_web_md')
 with_xpos = False
 chosen_tags = ['ADJ', 'ADV', 'NOUN', 'VERB']
 
-def get_suffix_tag(word):
-    for key in ADJ_suffix.keys():
-        for suffix in ADJ_suffix[key]:
+
+def get_suffix_tag(word, suffix_dict):
+    for key in suffix_dict.keys():
+        for suffix in suffix_dict[key]:
             if suffix.findall(word):
                 return key
     return 'common'
 
 
-def get_categorize_tag(word):
+def get_categorize_tag(word, categories_dict):
     max = 0.
-    ADJ_syn = nlp_sim(word)
+    Tag_syn = nlp_sim(word)
     category_key = 'quantity'
-    for i, key in enumerate(ADJ_categories):
-        words = ADJ_categories[key][:5]
+    for i, key in enumerate(categories_dict):
+        words = categories_dict[key][:5]
         word_syns = [nlp_sim(word) for word in words]
-        similarity_sum = np.sum([ADJ_syn.similarity(word_syn) for word_syn in word_syns])
+        similarity_sum = np.sum([Tag_syn.similarity(word_syn) for word_syn in word_syns])
         if similarity_sum > max:
             max = similarity_sum
             category_key = key
 
     return category_key
+
 
 def get_last_saved_json(folder, dataset_name):
     listdir = os.listdir(folder)
@@ -83,25 +86,24 @@ def get_extend_tags_tags(dataset, dict_to_json, folder, dataset_name, limit):
                         synsets = [synset.lexname().replace('noun', 'NOUN').replace('adv', 'ADV')
                                        .replace('verb', 'VERB') for synset in synsets if 'adj' not in synset.lexname()]
                         synsets_counter = Counter(synsets)
-                        if tag == 'ADJ':
-                            suffix_tag = get_suffix_tag(word)
-                            cat_tag = get_categorize_tag(word)
+                        if tag == ['ADJ', 'ADV']:
+                            suffix_tag = get_suffix_tag(word, ADJ_suffix) if tag == 'ADJ' else\
+                                get_suffix_tag(word, ADV_suffix)
+                            cat_tag = get_categorize_tag(word, ADJ_categories) if tag == 'ADJ' else\
+                                get_categorize_tag(word, ADV_categories)
                             sub_categories[word] = {'ADJ': [(cat_tag, 1), (suffix_tag, 1)]}
-                        if tag in ['NOUN', 'ADV', 'VERB']:
-                            sub_categories[word] = {'NOUN': list(), 'ADV': list(), 'VERB': list()}
+                        if tag in ['NOUN', 'VERB']:
+                            sub_categories[word] = {'NOUN': list(), 'VERB': list()}
                             for synset, incidence in synsets_counter.items():
                                 syn_tag, syn_cat = synset.split('.')
                                 sub_categories[word][syn_tag].append((syn_cat, incidence))
-                            for syn_tag in ['NOUN', 'ADV', 'VERB']:
+                            for syn_tag in ['NOUN', 'VERB']:
                                 sorted(sub_categories[word][syn_tag], key=lambda x: x[1], reverse=True)
                     try:
                         if len(sub_categories[word][tag]) > 0:
-                            tag = "_".join([tag] + [cat[0] for cat in sub_categories[word][tag][:3]])
-                    except Exception as e:
-                        print(e)
+                            tag = "_".join([tag] + [cat[0] for cat in sub_categories[word][tag][:2]])
+                    except:
                         print(1)
-                # else:
-                #     tag = 'UNK'
 
                 if j == 0:
                     upos_xpos_lists[0].append(tag)
@@ -192,6 +194,8 @@ def feature_selection(dataset, dict_to_json, folder, dataset_name, limit):
     with open('Feature_Combination.json', 'r') as f:
         feature_combination = json.loads(f.read())
     for feature in feature_combination:
+        if feature['base_tags'] != 'bigram':
+            continue
         feature_dataset_dict = dict()
         for key, item in dict_to_json.items():
             feature_dataset_dict[key] = item.copy()

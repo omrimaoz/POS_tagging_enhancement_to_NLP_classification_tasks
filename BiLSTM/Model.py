@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-class LSTM(torch.nn.Module):
+class BiLSTM(torch.nn.Module):
     def __init__(self, vocab_size, embedding_dim, hidden_dim, num_classes):
         super().__init__()
         self.num_layers = 3

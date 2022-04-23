@@ -1,0 +1,11 @@
+numpy
+torch
+torchtext
+sklearn
+scikit-learn
+pandas
+nltk
+spacy
+stanza
+datasets
+matplotlib

@@ -3,22 +3,11 @@ import time
 
 import torch
 from torch import nn
-from Dataset import *
+from Transformer.Dataset import *
 import torch.nn.functional as F
-from Batch import create_masks
+from Transformer.Batch import create_masks
 
 from Transformer.Model import Transformer
-
-dataset_name = sys.argv[1]
-tag_feature = sys.argv[2]  # tags = 'original' / 'upos' / ...
-limit = int(sys.argv[3])
-if limit not in [1000, 5000, 15000]:
-    limit = 5000
-
-# limit must divide by batch-size
-limit = 1024 if limit == 1000 else limit
-limit = 4096 if limit == 5000 else limit
-limit = 14848 if limit == 15000 else limit
 
 
 def train_model(model, criterion, opt):
@@ -107,31 +96,44 @@ def validate_model(model, criterion, opt):
         sum_loss += loss.item()
     return sum_loss, correct / total
 
-opt = {
-    'data': '../Datasets/{dataset_name}_Dataset_5000_{tag_feature}.json'.format(
-        dataset_name=dataset_name, tag_feature=tag_feature
-    ),
-    'lang': 'en_core_web_sm',
-    'epochs': 50,
-    'd_model': 32,
-    'n_layers': 2,
-    'heads': 4,
-    'dropout': 0.1,
-    'batchsize': 256,
-    'lr': 0.01,
-    'train_valid_ratio': 0.75,
-    'max_strlen': 512,
-    'tagging': 'original',
-    'limit': limit
-}
-torch.manual_seed(0)
 
-opt['train'], opt['valid'], SRC, TRG = create_dataset(opt)
-model = Transformer(len(SRC.vocab), len(TRG.vocab), opt['d_model'], opt['n_layers'], opt['heads'], opt['dropout'])
-for p in model.parameters():
-    if p.dim() > 1:
-        nn.init.xavier_uniform_(p)
+def main(dataset_name, tag_feature, limit, dataset_size):
+    # limit must divide by batch-size
+    limit = 1024 if limit == 1000 else limit
+    limit = 4096 if limit == 5000 else limit
+    limit = 14848 if limit == 15000 else limit
 
-opt['optimizer'] = torch.optim.Adam(model.parameters(), lr=opt['lr'], betas=(0.9, 0.98), eps=1e-9)
+    if tag_feature == 'original':
+        path = '../Datasets/{dataset_name}_Dataset_{dataset_size}_upos.json'.format(
+            dataset_name=dataset_name, dataset_size=dataset_size)
+    else:
+        path = '../Datasets/{dataset_name}_Dataset_{dataset_size}_{tag_feature}.json'.format(
+            dataset_name=dataset_name, dataset_size=dataset_size, tag_feature=tag_feature)
+        tag_feature = 'upos'
 
-train_model(model, criterion=F.cross_entropy, opt=opt)
+    opt = {
+        'data': path,
+        'lang': 'en_core_web_sm',
+        'epochs': 50,
+        'd_model': 32,
+        'n_layers': 2,
+        'heads': 4,
+        'dropout': 0.1,
+        'batchsize': 256,
+        'lr': 0.01,
+        'train_valid_ratio': 0.75,
+        'max_strlen': 512,
+        'tagging': tag_feature,
+        'limit': limit
+    }
+    torch.manual_seed(0)
+
+    opt['train'], opt['valid'], SRC, TRG = create_dataset(opt)
+    model = Transformer(len(SRC.vocab), len(TRG.vocab), opt['d_model'], opt['n_layers'], opt['heads'], opt['dropout'])
+    for p in model.parameters():
+        if p.dim() > 1:
+            nn.init.xavier_uniform_(p)
+
+    opt['optimizer'] = torch.optim.Adam(model.parameters(), lr=opt['lr'], betas=(0.9, 0.98), eps=1e-9)
+
+    train_model(model, criterion=F.cross_entropy, opt=opt)
