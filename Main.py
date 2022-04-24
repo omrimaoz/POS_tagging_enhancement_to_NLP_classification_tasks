@@ -2,7 +2,7 @@ import argparse
 import os
 
 from BiLSTM.Main import main as main_bilstm
-# from DAN.Main import main as main_dan
+from DAN.Main import main as main_dan
 from Transformer.Main import main as main_transformer
 
 
@@ -43,8 +43,8 @@ if args.dataset_size not in [15000, 5000, 1000]:
 if args.model == 'BiLSTM':
     main_bilstm(args.dataset_name, args.tag_feature, limit)
 
-# if args.model == 'DAN':
-#     main_dan(args.dataset_name, args.tag_feature, limit)
+if args.model == 'DAN':
+    main_dan(args.dataset_name, args.tag_feature, limit)
 
 if args.model == 'Transformer':
     main_transformer(args.dataset_name, args.tag_feature, limit)

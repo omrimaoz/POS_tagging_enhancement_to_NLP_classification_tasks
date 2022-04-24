@@ -1,20 +1,14 @@
-import datasets
-import numpy as np
 import pandas
 import pandas as pd
 from datasets import Dataset, DatasetDict
 
 
-# raw_datasets = load_dataset("imdb")
-
-def get_df_from_json(json_path):
+def get_df_from_json(json_path, limit):
     df = pd.read_json(json_path)
     d = df.T
-
-    # ds = datasets.Dataset.from_dict(d)
+    d = d[:limit]
     return d, d['class'].nunique()
-    # print(ds)
-    # print(a.shape)
+
 
 
 def split_dataset_to_datasetDict(df, train_percent, validate_percent):
@@ -65,40 +59,9 @@ def get_mode_dataset(df, mode):
     return Dataset.from_pandas(get_mode_df(df, mode))
 
 
-def load_json(json_path, mode, train_percent=0.8, validate_percent=0.2):
-    df, nclass = get_df_from_json(json_path)
+def load_json(json_path, mode, limit, train_percent=0.8, validate_percent=0.2):
+    df, nclass = get_df_from_json(json_path, limit)
     df_m = get_mode_df(df, mode)
     ds_dict = split_dataset_to_datasetDict(df_m, train_percent, validate_percent)
 
     return ds_dict, nclass
-
-
-def main():
-    json_path = r'../Datasets/News_Dataset_5000.json'
-    df, nclass = get_df_from_json(json_path)
-
-    m = get_mode_df(df, 'original')
-    s = split_dataset_to_datasetDict(m, 0.8, 0.2)
-    # ds = get_DatasetDict_from_json(json_path)
-    # m = get_mode(ds,'original')
-    print(s)
-
-
-    # main()
-    #
-    import datasets
-    #
-    # raw_datasets = load_dataset("imdb")
-    #
-    # print(raw_datasets)
-    # # for k,v in raw_datasets.items():
-    # #     print(k,len(v))
-    # main()
-
-    # print(datasets.list_metrics())
-    # main()
-
-    json_path = r'../Datasets/News_Dataset_5000.json'
-    df = get_df_from_json(json_path)
-
-    print()
