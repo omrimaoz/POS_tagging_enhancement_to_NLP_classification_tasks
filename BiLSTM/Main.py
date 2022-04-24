@@ -59,22 +59,23 @@ def validate_model(model, criterion, valid_loader):
         actual = np.array(y) if actual is None else np.concatenate((actual, y))
         y_hat = model(x, l)
         loss = criterion(y_hat, y)
-        pred = np.array(torch.max(y_hat, 1)[1]) if pred is None else np.concatenate((pred, torch.max(y_hat, 1)[1]))
-        correct += (torch.max(y_hat, 1)[1] == y).float().sum()
+        y_hat = torch.max(y_hat, 1)[1]
+        pred = np.array(y_hat) if pred is None else np.concatenate((pred, y_hat))
+        correct += (y_hat == y).float().sum()
         total += y.shape[0]
         sum_loss += loss.item()*y.shape[0]
     accuracy, precision, recall, F1 = get_F1_score(actual, pred)
     return sum_loss/total, accuracy, precision, recall, F1
 
 
-def main(dataset_name, tag_feature, limit, dataset_size):
+def main(dataset_name, tag_feature, limit):
     # loading the data
     if tag_feature == 'original':
-        path = '../Datasets/{dataset_name}_Dataset_{dataset_size}_upos.json'.format(
-            dataset_name=dataset_name, dataset_size=dataset_size)
+        path = './Datasets/{dataset_name}_Dataset_15000_upos.json'.format(
+            dataset_name=dataset_name)
     else:
-        path = '../Datasets/{dataset_name}_Dataset_{dataset_size}_{tag_feature}.json'.format(
-            dataset_name=dataset_name,  dataset_size=dataset_size, tag_feature=tag_feature)
+        path = './Datasets/{dataset_name}_Dataset_15000_{tag_feature}.json'.format(
+            dataset_name=dataset_name, tag_feature=tag_feature)
         tag_feature = 'upos'
 
     with open(path, 'r') as f:
@@ -82,10 +83,6 @@ def main(dataset_name, tag_feature, limit, dataset_size):
 
     # encoding the data
     phrases = encode_dataset(dataset, tag_feature)
-
-    for key, item in phrases['data'].copy().items():
-        if item['class'] in [5, 6]:
-            phrases['data'].pop(key)
 
     vocab_size = phrases['prop']['num_words']
     batch_size = min(phrases['prop']['num_phrases'], limit) // 10

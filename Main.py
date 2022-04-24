@@ -1,6 +1,5 @@
 import argparse
 import os
-import sys
 
 from BiLSTM.Main import main as main_bilstm
 # from DAN.Main import main as main_dan
@@ -14,13 +13,6 @@ parser.add_argument('--dataset_size', type=int, required=True)
 parser.add_argument('--model', type=str, required=True)
 args = parser.parse_args()
 
-# if len(sys.argv) != 5:
-#     assert False, "Error - Didn't pass required arguments"
-# dataset_name = sys.argv[1]
-# tag_feature = sys.argv[2]  # tags = 'original' / 'upos' / ...
-# limit = int(sys.argv[3])
-# model = sys.argv[4]
-
 possible_datasets = [
     'IMDB_Dataset_5000.json',
     'IMDB_Dataset_15000.json',
@@ -30,7 +22,10 @@ possible_datasets = [
 limit = args.dataset_size
 
 list_datasets = os.listdir('./Datasets')
-exist_datasets = [dataset for dataset in possible_datasets if dataset in list_datasets and args.dataset_name in dataset]
+exist_datasets = [dataset for dataset in list_datasets if '15000' in dataset and
+                  args.dataset_name in dataset and
+                  (args.tag_feature + ".json" in dataset or (args.tag_feature == 'original'
+                                                   and 'upos.json' in dataset))]
 if len(exist_datasets) == 0:
     assert False, "There's no relevant prepared dataset in Datasets folder."
 
@@ -41,23 +36,17 @@ if args.tag_feature not in ['original', 'upos', 'upos_filter', 'upos_filter_exte
 if args.model not in ['BiLSTM', 'DAN', 'Transformer']:
     assert False, "Error - Not supported model"
 
-if args.dataset_size == 15000 and [dataset for dataset in exist_datasets if str(args.dataset_size) in dataset] == 0:
-    print("There's no relevant prepared dataset with size 15000 -> limit was set to 5000")
-    limit = 5000
-
 if args.dataset_size not in [15000, 5000, 1000]:
     print("Not supported limit size -> limit was set to 5000")
     limit = 5000
 
-dataset_size = limit if limit != 1000 else 5000
-
 if args.model == 'BiLSTM':
-    main_bilstm(args.dataset_name, args.tag_feature, limit, dataset_size)
+    main_bilstm(args.dataset_name, args.tag_feature, limit)
 
 # if args.model == 'DAN':
-#     main_dan(args.dataset_name, args.tag_feature, limit, dataset_size)
+#     main_dan(args.dataset_name, args.tag_feature, limit)
 
 if args.model == 'Transformer':
-    main_transformer(args.dataset_name, args.tag_feature, limit, dataset_size)
+    main_transformer(args.dataset_name, args.tag_feature, limit)
 
 print('~~~~~~    Finish    ~~~~~~')

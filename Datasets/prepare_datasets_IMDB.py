@@ -9,7 +9,7 @@ folder = os.getcwd()
 
 dataset = dict()
 dict_to_json = dict()
-df = pd.read_csv(folder + "/IMDB Dataset_v1.csv")
+df = pd.read_csv(folder + "/IMDB_Dataset_v1.csv")
 
 sentiment_dict = {
     'negative': 0,
