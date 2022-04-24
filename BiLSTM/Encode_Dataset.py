@@ -22,11 +22,9 @@ def encode_dataset(phrases, tags):
         counts.update(tokenize(phrase[tags]))
 
     # deleting infrequent words
-    print("Number of words before:", len(counts.keys()))
     for word in list(counts):
         if counts[word] < 2:
             del counts[word]
-    print("Number of words after:", len(counts.keys()))
 
     #creating vocabulary
     vocab2index = {"": 0, "UNK": 1}

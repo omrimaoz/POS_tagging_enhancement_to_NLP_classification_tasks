@@ -86,24 +86,22 @@ def get_extend_tags_tags(dataset, dict_to_json, folder, dataset_name, limit):
                         synsets = [synset.lexname().replace('noun', 'NOUN').replace('adv', 'ADV')
                                        .replace('verb', 'VERB') for synset in synsets if 'adj' not in synset.lexname()]
                         synsets_counter = Counter(synsets)
-                        if tag == ['ADJ', 'ADV']:
+                        if tag in ['ADJ', 'ADV']:
                             suffix_tag = get_suffix_tag(word, ADJ_suffix) if tag == 'ADJ' else\
                                 get_suffix_tag(word, ADV_suffix)
                             cat_tag = get_categorize_tag(word, ADJ_categories) if tag == 'ADJ' else\
                                 get_categorize_tag(word, ADV_categories)
-                            sub_categories[word] = {'ADJ': [(cat_tag, 1), (suffix_tag, 1)]}
+                            sub_categories[word] = {tag: [(cat_tag, 1), (suffix_tag, 1)]}
                         if tag in ['NOUN', 'VERB']:
                             sub_categories[word] = {'NOUN': list(), 'VERB': list()}
                             for synset, incidence in synsets_counter.items():
                                 syn_tag, syn_cat = synset.split('.')
-                                sub_categories[word][syn_tag].append((syn_cat, incidence))
+                                if syn_tag in ['NOUN', 'VERB']:
+                                    sub_categories[word][syn_tag].append((syn_cat, incidence))
                             for syn_tag in ['NOUN', 'VERB']:
                                 sorted(sub_categories[word][syn_tag], key=lambda x: x[1], reverse=True)
-                    try:
-                        if len(sub_categories[word][tag]) > 0:
-                            tag = "_".join([tag] + [cat[0] for cat in sub_categories[word][tag][:2]])
-                    except:
-                        print(1)
+                    if len(sub_categories[word][tag]) > 0:
+                        tag = "_".join([tag] + [cat[0] for cat in sub_categories[word][tag][:2]])
 
                 if j == 0:
                     upos_xpos_lists[0].append(tag)
@@ -194,8 +192,6 @@ def feature_selection(dataset, dict_to_json, folder, dataset_name, limit):
     with open('Feature_Combination.json', 'r') as f:
         feature_combination = json.loads(f.read())
     for feature in feature_combination:
-        if feature['base_tags'] != 'bigram':
-            continue
         feature_dataset_dict = dict()
         for key, item in dict_to_json.items():
             feature_dataset_dict[key] = item.copy()

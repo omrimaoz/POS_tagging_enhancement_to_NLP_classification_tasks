@@ -27,7 +27,7 @@ def create_dataset(opt):
     raw_data = {'src': [remove_punctuation(line) for line in opt['src_data']], 'trg': [line for line in opt['trg_data']]}
     df = pd.DataFrame(raw_data, columns=["src", "trg"])
 
-    mask = (df['src'].str.count(' ') < opt['max_strlen'])# & (df['trg'].str.count(' ') < opt['max_strlen'])
+    mask = (df['src'].str.count(' ') < opt['max_strlen'])
     df = df.loc[mask][:opt['limit']]
 
     rows = [i for i in range(df.shape[0])]
@@ -44,22 +44,11 @@ def create_dataset(opt):
 
     ds_train.examples.pop(0)
     ds_valid.examples.pop(0)
-    # dl_train = torch.utils.data.DataLoader(
-    #     ds_train, batch_size=opt['batchsize'], shuffle=True)
-    # dl_valid = torch.utils.data.DataLoader(
-    #     ds_valid, batch_size=opt['batchsize'], shuffle=False)
 
     train_iter = data.Iterator(ds_train, batch_size=opt['batchsize'],
                             repeat=False, train=True, shuffle=True)
     valid_iter = data.Iterator(ds_valid, batch_size=opt['batchsize'],
                             repeat=False, train=True, shuffle=True)
-
-    # train_iter = MyIterator(ds_train, batch_size=opt['batchsize'], device=opt['device'],
-    #                         repeat=False, sort_key=lambda x: (len(x.src), len(x.trg)),
-    #                         batch_size_fn=batch_size_fn, train=True, shuffle=True)
-    # valid_iter = MyIterator(ds_valid, batch_size=opt['batchsize'], device=opt['device'],
-    #                         repeat=False, sort_key=lambda x: (len(x.src), len(x.trg)),
-    #                         batch_size_fn=batch_size_fn, train=False, shuffle=False)
 
     os.remove('translate_transformer_train_temp.csv')
     os.remove('translate_transformer_valid_temp.csv')
