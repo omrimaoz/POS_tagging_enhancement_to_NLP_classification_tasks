@@ -3,19 +3,13 @@ import gdown
 import os
 import numpy as np
 
-from PrepareDatasets import load_json
-from Model import DAN
-
+from DAN.PrepareDatasets import load_json
+from DAN.Model import DAN
 from nltk.tokenize import word_tokenize
 import json
-
 from sklearn.metrics import precision_recall_fscore_support, accuracy_score
-
-from datasets import load_metric
 from dataclasses import dataclass
-
 import torch
-from torch import nn
 
 from transformers import Trainer
 from transformers import TrainingArguments
@@ -159,7 +153,7 @@ def plot_trainer(trainer, title, metric, file_name, mode):
     fig.savefig(save_path)
 
 
-def train_net(json_path, mode, epoch_num, train_percent, val_percent, file_name):
+def train_net(json_path, mode, limit, epoch_num, train_percent, val_percent, file_name):
     if os.path.exists('glove.npy'):
         print('glove.npy already exists')
     else:
@@ -173,7 +167,7 @@ def train_net(json_path, mode, epoch_num, train_percent, val_percent, file_name)
 
     nltk.download('punkt')
 
-    raw_datasets, nclasses = load_json(json_path, mode, train_percent, val_percent)
+    raw_datasets, nclasses = load_json(json_path, mode, limit, train_percent, val_percent)
 
     with open("vocab.json") as f:
         vocab = json.load(f)
@@ -207,26 +201,18 @@ def train_net(json_path, mode, epoch_num, train_percent, val_percent, file_name)
     trainer.train()
 
     for metric in ['accuracy', 'f1', 'precision', 'recall']:
+
         plot_trainer(trainer, f'epoch vs eval {metric}', metric, file_name, mode)
 
 
-def runDanModel(modes, subjects, sizes, suffixes,datasets_dir, epoch_num, train_percent):
-    for mode in modes:
-        for subject in subjects:
-            for suffix in suffixes:
-                for size in sizes:
-                    file_name = f'{subject}_Dataset_{size}{suffix}.json'
-                    json_path = f'{datasets_dir}/{file_name}'
-                    train_net(json_path, mode, epoch_num, train_percent, 0, file_name)
-
-
-if __name__=="__main__":
-    modes = ['original', 'upos']
-    subjects = ['News', 'IMDB']
-    sizes = ['5000']
-    suffixes = ['', '_bigram', '_bigram_filter', '_bigram_extend', '_bigram_filter_extend', '_upos', '_upos_filter',
-                '_upos_filter_extend']
-    datasets_dir = '../Datasets'
-    epoch_num = 50
-    train_percent = 0.8
-    runDanModel(modes, subjects, sizes, suffixes,datasets_dir,epoch_num, train_percent)
+def main(dataset_name, tag_feature, limit):
+    file_name = '{dataset_name}_Dataset_{limit}_{tag_feature}.json'.format(
+        dataset_name=dataset_name, limit=limit, tag_feature=tag_feature)
+    if tag_feature == 'original':
+        path = './Datasets/{dataset_name}_Dataset_15000_upos.json'.format(
+            dataset_name=dataset_name)
+    else:
+        path = './Datasets/{dataset_name}_Dataset_15000_{tag_feature}.json'.format(
+            dataset_name=dataset_name, tag_feature=tag_feature)
+        tag_feature = 'upos'
+    train_net(path, tag_feature, limit, epoch_num=50, train_percent=0.8, val_percent=0, file_name=file_name)

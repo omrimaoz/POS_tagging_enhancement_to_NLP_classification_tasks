@@ -34,9 +34,7 @@ class DAN(nn.Module):
         self.embeddings = nn.Embedding.from_pretrained(torch.FloatTensor(np.load("glove.npy")))
 
         self.input_size = 300
-        # self.input_size = input_size
         self.hidden_size = 300
-        # self.output_size = 2
         self.output_size = class_num
         self.activation = nn.ReLU()
         self.input_layer = nn.Linear(self.input_size, self.hidden_size)
@@ -45,15 +43,11 @@ class DAN(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Linear(self.input_size, self.hidden_size),
-
-            # nn.Linear(self.hidden_size, self.hidden_size),
             nn.ReLU(),
             nn.Linear(self.hidden_size, self.hidden_size),
             nn.ReLU(),
             nn.Linear(self.hidden_size, self.hidden_size),
             nn.ReLU(),
-
-            # nn.Softmax()
             nn.Linear(self.hidden_size, self.output_size)
         )
 
